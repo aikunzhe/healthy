@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凯格尔语音训练 - 慢肌训练模块</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>凯格尔语音训练</h1>
+            <h2>慢肌训练模块</h2>
+        </header>
+        
+        <div class="training-card">
+            <div class="status-display">
+                <div class="current-action" id="currentAction">准备开始</div>
+                <div class="timer" id="timer">03:00</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="startBtn" class="btn btn-primary">开始训练</button>
+                <button id="pauseBtn" class="btn btn-secondary" disabled>暂停</button>
+                <button id="resetBtn" class="btn btn-secondary">重置</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>训练说明：</h3>
+                <ul>
+                    <li>训练时长：3分钟</li>
+                    <li>收缩阶段：3秒（语音提示"收缩并保持"）</li>
+                    <li>放松阶段：3秒（语音提示"放松"）</li>
+                    <li>循环进行，直到训练结束</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="settings">
+            <h3>设置</h3>
+            <div class="setting-item">
+                <label for="volumeSlider">音量：</label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.7">
+                <span id="volumeValue">70%</span>
+            </div>
+            <div class="setting-item">
+                <label for="voiceSelect">语音选择：</label>
+                <select id="voiceSelect">
+                    <option value="">自动选择</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
