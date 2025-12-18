@@ -1,0 +1,7 @@
+name = "healthy"
+main = "index.ts"
+compatibility_date = "2025-12-18"
+
+[site]
+bucket = "."       # 静态文件根目录
+entry-point = "."  # Worker 脚本所在目录
