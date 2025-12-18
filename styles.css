@@ -234,6 +234,33 @@ header h2 {
     font-weight: 600;
     color: #667eea;
 }
+.media-section {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.media-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.media-card h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.media-image img,
+.media-video video {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+
 
 /* 动画效果 */
 @keyframes pulse {
