@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凯格尔语音训练 - 慢肌训练</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status {
+            font-size: 2em;
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .status.contract {
+            background: rgba(255, 99, 99, 0.3);
+            border-color: rgba(255, 99, 99, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        .status.relax {
+            background: rgba(99, 255, 99, 0.3);
+            border-color: rgba(99, 255, 99, 0.5);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .timer {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start-btn {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        .pause-btn {
+            background: rgba(255, 152, 0, 0.3);
+            border-color: rgba(255, 152, 0, 0.5);
+        }
+
+        .stop-btn {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+
+        .instructions {
+            margin-top: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .phase-info {
+            font-size: 1.2em;
+            margin: 15px 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏃‍♀️ 凯格尔语音训练</h1>
+        <div class="status" id="status">准备开始训练</div>
+        
+        <div class="timer" id="timer">03:00</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        
+        <div class="phase-info" id="phaseInfo">点击开始按钮开始训练</div>
+        
+        <div class="controls">
+            <button class="start-btn" id="startBtn" onclick="startTraining()">开始训练</button>
+            <button class="pause-btn" id="pauseBtn" onclick="pauseTraining()" disabled>暂停</button>
+            <button class="stop-btn" id="stopBtn" onclick="stopTraining()" disabled>停止</button>
+        </div>
+        
+        <div class="instructions">
+            <p><strong>训练说明：</strong></p>
+            <p>• 每3秒会听到"收缩并保持"的语音提示</p>
+            <p>• 保持收缩3秒后听到"放松"提示</p>
+            <p>• 放松3秒后继续下一轮</p>
+            <p>• 整个训练持续3分钟</p>
+        </div>
+    </div>
+
+    <script>
+        let trainingInterval;
+        let phaseInterval;
+        let totalTime = 180; // 3分钟 = 180秒
+        let remainingTime = totalTime;
+        let isTraining = false;
+        let isPaused = false;
+        let currentPhase = 'relax'; // 'contract' 或 'relax'
+        let phaseTime = 0;
+        let phaseDuration = 3; // 每个阶段3秒
+
+        const statusEl = document.getElementById('status');
+        const timerEl = document.getElementById('timer');
+        const progressEl = document.getElementById('progress');
+        const phaseInfoEl = document.getElementById('phaseInfo');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const progress = ((totalTime - remainingTime) / totalTime) * 100;
+            progressEl.style.width = progress + '%';
+        }
+
+        function updatePhase() {
+            if (currentPhase === 'contract') {
+                statusEl.textContent = '收缩并保持';
+                statusEl.className = 'status contract';
+                phaseInfoEl.textContent = `保持收缩 ${phaseTime} 秒`;
+            } else {
+                statusEl.textContent = '放松';
+                statusEl.className = 'status relax';
+                phaseInfoEl.textContent = `放松 ${phaseTime} 秒`;
+            }
+        }
+
+        function switchPhase() {
+            if (currentPhase === 'contract') {
+                currentPhase = 'relax';
+                speak('放松');
+            } else {
+                currentPhase = 'contract';
+                speak('收缩并保持');
+            }
+            phaseTime = 0;
+            updatePhase();
+        }
+
+        function startTraining() {
+            if (isTraining && !isPaused) return;
+            
+            isTraining = true;
+            isPaused = false;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
+            
+            // 开始总计时器
+            trainingInterval = setInterval(() => {
+                if (!isPaused) {
+                    remainingTime--;
+                    updateDisplay();
+                    
+                    if (remainingTime <= 0) {
+                        stopTraining();
+                        speak('训练完成');
+                        statusEl.textContent = '训练完成！';
+                        statusEl.className = 'status';
+                        phaseInfoEl.textContent = '恭喜您完成了3分钟的凯格尔训练';
+                        return;
+                    }
+                }
+            }, 1000);
+            
+            // 开始阶段计时器
+            phaseInterval = setInterval(() => {
+                if (!isPaused) {
+                    phaseTime++;
+                    updatePhase();
+                    
+                    if (phaseTime >= phaseDuration) {
+                        switchPhase();
+                    }
+                }
+            }, 1000);
+            
+            // 开始第一个阶段
+            currentPhase = 'contract';
+            phaseTime = 0;
+            speak('收缩并保持');
+            updatePhase();
+        }
+
+        function pauseTraining() {
+            if (isPaused) {
+                isPaused = false;
+                pauseBtn.textContent = '暂停';
+                pauseBtn.className = 'pause-btn';
+            } else {
+                isPaused = true;
+                pauseBtn.textContent = '继续';
+                pauseBtn.className = 'start-btn';
+            }
+        }
+
+        function stopTraining() {
+            isTraining = false;
+            isPaused = false;
+            
+            clearInterval(trainingInterval);
+            clearInterval(phaseInterval);
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            pauseBtn.textContent = '暂停';
+            pauseBtn.className = 'pause-btn';
+            
+            // 重置状态
+            remainingTime = totalTime;
+            currentPhase = 'relax';
+            phaseTime = 0;
+            
+            statusEl.textContent = '准备开始训练';
+            statusEl.className = 'status';
+            phaseInfoEl.textContent = '点击开始按钮开始训练';
+            updateDisplay();
+        }
+
+        // 初始化显示
+        updateDisplay();
+    </script>
+</body>
+</html>
